@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { IsObjectIdPipe } from 'nestjs-object-id';
@@ -28,6 +29,14 @@ export class UsersController {
   @Get()
   async getAll(): Promise<UserResponse[]> {
     return await this.userService.getAllUsers();
+  }
+
+  @Get('me')
+  async getCurrentUser(@Req() req): Promise<UserResponse> {
+    // Retrieve current user id
+    const userId = req.user.sub;
+
+    return await this.userService.getCurrentUser(userId);
   }
 
   @Get(':id')

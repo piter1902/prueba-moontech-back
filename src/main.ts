@@ -21,6 +21,11 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, {
     logger: loggerLevels,
+    cors: {
+      allowedHeaders: '*',
+      methods: '*',
+      origin: '*',
+    },
   });
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(3000);

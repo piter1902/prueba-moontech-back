@@ -11,7 +11,9 @@ import { UpdateUserRequest } from 'src/users/models/requests/update-user.request
 export class UserService {
   constructor(private userRepository: UserRepository) {}
 
-  async createUser(createUserRequest: CreateUserRequest): Promise<string> {
+  async createUser(
+    createUserRequest: CreateUserRequest,
+  ): Promise<{ id: string }> {
     // Check for duplicate mail
     const emailExist = await this.userRepository.existEmail(
       createUserRequest.email,
@@ -31,7 +33,9 @@ export class UserService {
 
     const result = await this.userRepository.create(createUserRequest);
 
-    return result.id;
+    return {
+      id: result.id,
+    };
   }
 
   async getAllUsers(): Promise<UserResponse[]> {
@@ -58,13 +62,16 @@ export class UserService {
     }
 
     // Update password if present
-    if (updateUser.password) {
+    if (updateUser.password && updateUser.password != '') {
       const password = await bcrypt.hash(
         updateUser.password,
         UserConstants.passwordSaltRounds,
       );
 
       updateUser.password = password;
+    } else {
+      // Delete property to prevent updating
+      delete updateUser.password;
     }
 
     await this.userRepository.updateOne({ _id: user._id }, updateUser);
@@ -78,5 +85,15 @@ export class UserService {
     }
 
     await this.userRepository.remove({ _id: id });
+  }
+
+  async getCurrentUser(userId: string): Promise<UserResponse> {
+    const user = await this.userRepository.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException(`El usuario ${userId} no existe`);
+    }
+
+    return UserResponse.fromEntity(user);
   }
 }

@@ -17,6 +17,10 @@ export class ConnectionLogRepository extends BaseRepository<ConnectionLogDocumen
   }
 
   override async findAll(): Promise<ConnectionLogDocument[]> {
-    return await this.connectionModel.find().populate('user').exec();
+    return await this.connectionModel
+      .find()
+      .populate('user')
+      .sort({ date: 'desc' })
+      .exec();
   }
 }
